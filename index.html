@@ -410,16 +410,18 @@ function render() {
     const sel = activeData.cards.includes(i);
     gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" data-n="${i}" onclick="toggleNum(${i})">${i}</button>`;
   }
-  const c13 = activeData.cards.filter(x => x===13).length;
+// 1. Calculate how many 13s are currently selected
+  const c13 = activeData.cards.filter(x => x === 13).length;
   
-  // Only show 13 buttons if we are NOT in regular Flip 7 mode
-  if(state.mode !== 'flip7') {
-    // First 13
-    gridHtml += `<button class="btn-num ${c13>=1?'selected':''} ${c13===0 && uC>=7?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
-    // Second 13
-    gridHtml += `<button class="btn-num ${c13>=2?'selected':''} ${c13<2 && uC>=7?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
+  // 2. ONLY add 13 buttons to the grid if the mode is NOT 'flip7'
+  if (state.mode !== 'flip7') {
+    // First 13 button
+    gridHtml += `<button class="btn-num ${c13 >= 1 ? 'selected' : ''} ${c13 === 0 && uC >= 7 ? 'disabled' : ''}" data-n="13" onclick="toggleNum(13)">13</button>`;
+    // Second 13 button (unique to Vengeance/Combo)
+    gridHtml += `<button class="btn-num ${c13 >= 2 ? 'selected' : ''} ${c13 < 2 && uC >= 7 ? 'disabled' : ''}" data-n="13" onclick="toggleNum(13)">13</button>`;
   }
   
+  // 3. Finally, push the full gridHtml string into the DOM
   document.getElementById('num-grid').innerHTML = gridHtml;
 
   const pos = ['×2','+2','+4','+6','+8','+10'], neg = ['÷2','-2','-4','-6','-8','-10'];
