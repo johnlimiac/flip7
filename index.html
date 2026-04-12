@@ -36,11 +36,13 @@
       font-family: 'DM Sans', sans-serif; 
       height: 100vh;
       height: 100svh; 
+      width: 100vw;
       overflow: hidden; 
       display: flex; 
       flex-direction: column; 
       align-items: center;
       position: relative;
+      overscroll-behavior: none; /* Prevents pull-to-refresh pulsing */
     }
 
     .content-width { 
@@ -49,12 +51,12 @@
       display: flex; 
       flex-direction: column; 
       height: 100%; 
-      overflow: visible; /* Essential for fireworks to bleed out */
+      overflow: hidden; /* Keeps the UI crisp */
       z-index: 2;
       position: relative;
     }
 
-    /* --- ASYMMETRIC ORGANIC FIREWORKS --- */
+    /* --- THE iOS PULSE FIX: CONSTRAINED FIREWORKS --- */
     .fireworks-layer {
       position: absolute;
       top: 0;
@@ -62,8 +64,11 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 1; /* Sits behind UI but above background */
-      overflow: visible; 
+      z-index: 1; 
+      /* Tells Safari to ignore these elements for layout calculations */
+      contain: layout paint;
+      touch-action: none;
+      overflow: hidden; 
       visibility: hidden;
     }
 
@@ -72,7 +77,7 @@
     }
 
     @keyframes firework {
-      0% { transform: translateY(90vh) scale(0.2); opacity: 1; }
+      0% { transform: translateY(95vh) scale(0.2); opacity: 1; }
       30% { opacity: 1; }
       100% { transform: translateY(var(--y)) scale(var(--s)); opacity: 0; }
     }
@@ -81,7 +86,7 @@
       content: "";
       position: absolute;
       top: 0;
-      width: 4vmin;
+      width: 3.5vmin;
       aspect-ratio: 1;
       background: 
         radial-gradient(circle, #fff 0.1vmin, #0000 0) 10% 10%,
@@ -102,21 +107,21 @@
       animation: firework var(--d) infinite ease-out; 
     }
 
-    /* Positioning and Variety */
-    .firework:nth-child(1) { left: 5%;  --y: 15vh; --s: 6; --d: 1.6s; }
-    .firework:nth-child(2) { left: 90%; --y: 25vh; --s: 4; --d: 2.2s; animation-delay: -0.4s; }
-    .firework:nth-child(3) { left: 45%; --y: 10vh; --s: 9; --d: 1.9s; animation-delay: -1.2s; }
-    .firework:nth-child(4) { left: 20%; --y: 35vh; --s: 5; --d: 2.6s; animation-delay: -0.8s; }
-    .firework:nth-child(5) { left: 95%; --y: 40vh; --s: 7; --d: 2.0s; animation-delay: -1.5s; }
+    /* Organic, Asymmetric Spawning */
+    .firework:nth-child(1) { left: 10%; --y: 18vh; --s: 5; --d: 1.6s; }
+    .firework:nth-child(2) { left: 85%; --y: 28vh; --s: 3.5; --d: 2.2s; animation-delay: -0.4s; }
+    .firework:nth-child(3) { left: 45%; --y: 12vh; --s: 7; --d: 1.9s; animation-delay: -1.2s; }
+    .firework:nth-child(4) { left: 25%; --y: 35vh; --s: 4.5; --d: 2.5s; animation-delay: -0.8s; }
+    .firework:nth-child(5) { left: 92%; --y: 42vh; --s: 6; --d: 2.0s; animation-delay: -1.5s; }
 
     .firework::before { transform: rotate(120deg); }
     .firework::after { transform: rotate(240deg); }
 
-    /* UI SCREENS (Higher Z-Index) */
-    #setup-screen, #game-screen { position: relative; z-index: 10; }
+    /* UI SCREENS */
+    #setup-screen, #game-screen { position: relative; z-index: 10; width: 100%; height: 100%; }
 
-    /* --- REST OF STYLES --- */
-    #setup-screen { padding: 40px 24px; flex: 1; display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
+    /* SETUP SCREEN */
+    #setup-screen { padding: 40px 24px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
     h1 { font-family: 'Bebas Neue'; font-size: 5rem; text-align: center; margin-bottom: 25px; line-height: 1; }
     .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .mode-btn { background: var(--surface); border: 2px solid var(--border); color: var(--muted); padding: 15px 5px; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
@@ -129,7 +134,8 @@
     .add-player-link { background: none; border: none; color: var(--accent-blue); font-weight: bold; font-size: 0.9rem; cursor: pointer; text-decoration: underline; margin-bottom: 25px; text-align: left; }
     .primary-btn { width: 100%; padding: 20px; background: var(--text); border: none; border-radius: 16px; color: #fff; font-family: 'Bebas Neue'; font-size: 2rem; cursor: pointer; text-transform: uppercase; }
 
-    #game-screen { display: none; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
+    /* GAME SCREEN */
+    #game-screen { display: none; flex-direction: column; }
     .header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card-body); border-bottom: 2px solid var(--border); padding-top: max(12px, env(safe-area-inset-top)); }
     .header-btn { background:none; border:none; font-weight:bold; cursor:pointer; font-size: 0.75rem; text-transform: uppercase; }
     #mode-title { font-family: 'Bebas Neue'; font-size: 1.8rem; }
@@ -142,7 +148,6 @@
     .cell-editing { outline: 3px solid var(--accent-blue); outline-offset: -3px; background: #eff6ff !important; }
     
     .winner-row td:first-child { border: 3px solid #22c55e !important; border-radius: 8px; background: #f0fdf4 !important; }
-    .f7-count { color: var(--accent-green); font-size: 0.65rem; display: block; }
 
     .controls { padding: 10px 15px; background: var(--card-body); border-top: 2px solid var(--border); border-radius: 20px 20px 0 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
     .current-info { display:flex; justify-content:space-between; align-items: baseline; margin-bottom: 4px; }
@@ -162,8 +167,8 @@
     .btn-num[data-n="10"]{ color: #b91c1c; } .btn-num[data-n="11"]{ color: #1e40af; } 
     .btn-num[data-n="12"]{ color: #78350f; } .btn-num[data-n="13"]{ color: #1d4ed8; }
 
-    .mods-row { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 8px; }
-    .btn-mod { padding: 8px 12px; background: #fff; border: 2px solid var(--border); border-radius: 8px; font-weight: bold; font-size: 0.75rem; }
+    .mods-row { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; margin-bottom: 8px; }
+    .btn-mod { padding: 8px 12px; background: #fff; border: 2px solid var(--border); border-radius: 8px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
     .btn-mod.active { background: var(--accent-green); color: #fff; border-color: var(--accent-green); }
 
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -194,7 +199,9 @@
     </div>
     
     <div id="neg-toggle-container" style="display:none;">
-      <label><input type="checkbox" id="opt-negatives"> Allow Negatives</label>
+      <label style="font-weight: bold; font-size: 0.9rem; color: var(--muted);">
+        <input type="checkbox" id="opt-negatives"> Allow Negative Scores
+      </label>
     </div>
 
     <div id="player-list">
@@ -241,7 +248,10 @@
 </div>
 
 <script>
-let state = { activeGame: false, mode:'flip7', players:[], round:1, history:[], current:[], active:0, editingRound: null, allowNegatives: false };
+let state = { 
+  activeGame: false, mode:'flip7', players:[], round:1, history:[], 
+  current:[], active:0, editingRound: null, allowNegatives: false
+};
 
 function saveToCache() { localStorage.setItem('flip7_state', JSON.stringify(state)); }
 function loadFromCache() {
@@ -344,6 +354,7 @@ function selectPlayer(p) { state.active = p; state.editingRound = null; render()
 function render() {
   const activeData = (state.editingRound === null) ? state.current[state.active] : state.history[state.active][state.editingRound];
   document.getElementById('display-name').innerText = state.players[state.active];
+  document.getElementById('edit-context').innerText = state.editingRound === null ? 'Live Round' : `Editing Round ${state.editingRound + 1}`;
   document.getElementById('display-score').innerText = activeData.state === 'playing' ? calcTotalScore(activeData) : (activeData.state === 'bust' ? 'BUST 💥' : 'STAY ✓');
   document.getElementById('rd-num').innerText = state.round;
 
@@ -381,7 +392,7 @@ function render() {
   let gridHtml = ''; const uC = countUniqueCards(activeData);
   for(let i=0; i<=12; i++) {
     const sel = activeData.cards.includes(i);
-    gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" data-n="${i}" onclick="toggleNum(${i})">${i}</button>`;
+    gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" onclick="toggleNum(${i})">${i}</button>`;
   }
   if (state.mode !== 'flip7') {
     const c13 = activeData.cards.filter(x => x===13).length;
@@ -397,13 +408,13 @@ function render() {
 
 function endRound() {
   const totals = state.players.map((_, i) => state.history[i].reduce((sum, h) => sum + calcTotalScore(h), 0) + calcTotalScore(state.current[i]));
-  if (Math.max(...totals) >= 200) { if(confirm("Restart session?")) restartGame(false); return; }
+  if (Math.max(...totals) >= 200) { if(confirm("Start new session with these players?")) restartGame(false); return; }
   state.players.forEach((_, i) => state.history[i].push({ ...state.current[i], cards: [...state.current[i].cards], mods: [...state.current[i].mods] }));
   state.round++; resetCurrent(); saveToCache(); render();
 }
 
 function goHome() { document.getElementById('game-screen').style.display='none'; document.getElementById('setup-screen').style.display='flex'; }
-function restartGame(ask) { if(!ask || confirm("Restart?")) { state.history = state.players.map(() => []); state.round = 1; resetCurrent(); saveToCache(); render(); } }
+function restartGame(ask) { if(!ask || confirm("Clear scores?")) { state.history = state.players.map(() => []); state.round = 1; resetCurrent(); saveToCache(); render(); } }
 
 window.onload = loadFromCache;
 </script>
