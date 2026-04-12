@@ -42,7 +42,7 @@
       flex-direction: column; 
       align-items: center;
       position: relative;
-      overscroll-behavior: none; /* Prevents pull-to-refresh pulsing */
+      overscroll-behavior: none;
     }
 
     .content-width { 
@@ -51,12 +51,12 @@
       display: flex; 
       flex-direction: column; 
       height: 100%; 
-      overflow: hidden; /* Keeps the UI crisp */
+      overflow: hidden;
       z-index: 2;
       position: relative;
     }
 
-    /* --- THE iOS PULSE FIX: CONSTRAINED FIREWORKS --- */
+    /* --- CONSTRAINED FIREWORKS (iOS FIX) --- */
     .fireworks-layer {
       position: absolute;
       top: 0;
@@ -65,16 +65,13 @@
       height: 100%;
       pointer-events: none;
       z-index: 1; 
-      /* Tells Safari to ignore these elements for layout calculations */
       contain: layout paint;
       touch-action: none;
       overflow: hidden; 
       visibility: hidden;
     }
 
-    body.has-winner .fireworks-layer {
-      visibility: visible;
-    }
+    body.has-winner .fireworks-layer { visibility: visible; }
 
     @keyframes firework {
       0% { transform: translateY(95vh) scale(0.2); opacity: 1; }
@@ -101,27 +98,21 @@
       background-repeat: no-repeat;
     }
 
-    body.has-winner .firework, 
-    body.has-winner .firework::before, 
-    body.has-winner .firework::after { 
+    body.has-winner .firework, .firework::before, .firework::after { 
       animation: firework var(--d) infinite ease-out; 
     }
 
-    /* Organic, Asymmetric Spawning */
     .firework:nth-child(1) { left: 10%; --y: 18vh; --s: 5; --d: 1.6s; }
     .firework:nth-child(2) { left: 85%; --y: 28vh; --s: 3.5; --d: 2.2s; animation-delay: -0.4s; }
     .firework:nth-child(3) { left: 45%; --y: 12vh; --s: 7; --d: 1.9s; animation-delay: -1.2s; }
-    .firework:nth-child(4) { left: 25%; --y: 35vh; --s: 4.5; --d: 2.5s; animation-delay: -0.8s; }
+    .firework:nth-child(4) { left: 25%; --y: 35vh; --s: 4.5; --d: 2.6s; animation-delay: -0.8s; }
     .firework:nth-child(5) { left: 92%; --y: 42vh; --s: 6; --d: 2.0s; animation-delay: -1.5s; }
 
     .firework::before { transform: rotate(120deg); }
     .firework::after { transform: rotate(240deg); }
 
-    /* UI SCREENS */
-    #setup-screen, #game-screen { position: relative; z-index: 10; width: 100%; height: 100%; }
-
     /* SETUP SCREEN */
-    #setup-screen { padding: 40px 24px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    #setup-screen { padding: 40px 24px; flex: 1; display: flex; flex-direction: column; width: 100%; overflow-y: auto; z-index: 10; }
     h1 { font-family: 'Bebas Neue'; font-size: 5rem; text-align: center; margin-bottom: 25px; line-height: 1; }
     .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .mode-btn { background: var(--surface); border: 2px solid var(--border); color: var(--muted); padding: 15px 5px; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
@@ -135,7 +126,7 @@
     .primary-btn { width: 100%; padding: 20px; background: var(--text); border: none; border-radius: 16px; color: #fff; font-family: 'Bebas Neue'; font-size: 2rem; cursor: pointer; text-transform: uppercase; }
 
     /* GAME SCREEN */
-    #game-screen { display: none; flex-direction: column; }
+    #game-screen { display: none; flex-direction: column; height: 100%; width: 100%; overflow: hidden; z-index: 10; position: relative; }
     .header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card-body); border-bottom: 2px solid var(--border); padding-top: max(12px, env(safe-area-inset-top)); }
     .header-btn { background:none; border:none; font-weight:bold; cursor:pointer; font-size: 0.75rem; text-transform: uppercase; }
     #mode-title { font-family: 'Bebas Neue'; font-size: 1.8rem; }
@@ -156,9 +147,10 @@
 
     .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
     .btn-num { aspect-ratio: 1; border: 2.5px solid currentColor; background: #fff; border-radius: 8px; font-family: 'Bebas Neue'; font-size: 1.1rem; cursor: pointer; }
-    .btn-num.disabled { opacity: 0.1; }
+    .btn-num.disabled { opacity: 0.1; cursor: not-allowed; }
     .btn-num.selected { background: var(--accent-green) !important; color: #fff !important; border-color: var(--accent-green) !important; }
     
+    /* --- COLOR PALETTE RESTORED --- */
     .btn-num[data-n="0"] { color: #94a3b8; } .btn-num[data-n="1"] { color: #64748b; } 
     .btn-num[data-n="2"] { color: #849101; } .btn-num[data-n="3"] { color: #be123c; } 
     .btn-num[data-n="4"] { color: #0891b2; } .btn-num[data-n="5"] { color: #15803d; } 
@@ -168,14 +160,14 @@
     .btn-num[data-n="12"]{ color: #78350f; } .btn-num[data-n="13"]{ color: #1d4ed8; }
 
     .mods-row { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; margin-bottom: 8px; }
-    .btn-mod { padding: 8px 12px; background: #fff; border: 2px solid var(--border); border-radius: 8px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
+    .btn-mod { padding: 8px 12px; background: #fff; border: 2px solid var(--border); border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; white-space: nowrap; }
     .btn-mod.active { background: var(--accent-green); color: #fff; border-color: var(--accent-green); }
 
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .btn-action { padding: 10px; border-radius: 10px; font-weight: bold; font-family: 'Bebas Neue'; font-size: 1.1rem; }
+    .btn-action { padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: 'Bebas Neue'; font-size: 1.1rem; }
     .bust { background: #fee2e2; color: #991b1b; border: 2px solid #f87171; }
     .stay { background: #dcfce7; color: #166534; border: 2px solid #4ade80; }
-    #live-save-btn { padding: 15px; margin-bottom: 8px; background: var(--accent-blue); border-radius: 12px; color: #fff; font-family: 'Bebas Neue'; font-size: 1.5rem; width: 100%; border: none; }
+    #live-save-btn { padding: 15px; margin-bottom: 8px; background: var(--accent-blue); border: none; border-radius: 12px; color: #fff; font-family: 'Bebas Neue'; font-size: 1.5rem; cursor: pointer; width: 100%; }
     #live-save-btn.winner-state { background: #166534; }
   </style>
 </head>
@@ -198,7 +190,7 @@
       <div class="mode-btn" id="m-bo" onclick="setMode('combo')">COMBO</div>
     </div>
     
-    <div id="neg-toggle-container" style="display:none;">
+    <div id="neg-toggle-container" style="display:none; margin-bottom: 15px;">
       <label style="font-weight: bold; font-size: 0.9rem; color: var(--muted);">
         <input type="checkbox" id="opt-negatives"> Allow Negative Scores
       </label>
@@ -233,7 +225,7 @@
       <div class="current-info">
         <div>
           <div class="active-name" id="display-name">---</div>
-          <div id="edit-context" style="font-size: 0.65rem; color: var(--accent-blue); text-transform: uppercase;">Live Round</div>
+          <div style="font-size: 0.65rem; color: var(--accent-blue); text-transform: uppercase;" id="edit-context">Live Round</div>
         </div>
         <div id="display-score" class="active-score">0</div>
       </div>
@@ -248,10 +240,7 @@
 </div>
 
 <script>
-let state = { 
-  activeGame: false, mode:'flip7', players:[], round:1, history:[], 
-  current:[], active:0, editingRound: null, allowNegatives: false
-};
+let state = { activeGame: false, mode:'flip7', players:[], round:1, history:[], current:[], active:0, editingRound: null, allowNegatives: false };
 
 function saveToCache() { localStorage.setItem('flip7_state', JSON.stringify(state)); }
 function loadFromCache() {
@@ -392,12 +381,12 @@ function render() {
   let gridHtml = ''; const uC = countUniqueCards(activeData);
   for(let i=0; i<=12; i++) {
     const sel = activeData.cards.includes(i);
-    gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" onclick="toggleNum(${i})">${i}</button>`;
+    gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" data-n="${i}" onclick="toggleNum(${i})">${i}</button>`;
   }
   if (state.mode !== 'flip7') {
     const c13 = activeData.cards.filter(x => x===13).length;
-    gridHtml += `<button class="btn-num ${c13>=1?'selected':''} ${c13===0 && uC>=7?'disabled':''}" onclick="toggleNum(13)">13</button>`;
-    gridHtml += `<button class="btn-num ${c13>=2?'selected':''} ${c13<2 && uC>=7?'disabled':''}" onclick="toggleNum(13)">13</button>`;
+    gridHtml += `<button class="btn-num ${c13>=1?'selected':''} ${c13===0 && uC>=7?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
+    gridHtml += `<button class="btn-num ${c13>=2?'selected':''} ${c13<2 && uC>=7?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
   }
   document.getElementById('num-grid').innerHTML = gridHtml;
 
@@ -408,13 +397,13 @@ function render() {
 
 function endRound() {
   const totals = state.players.map((_, i) => state.history[i].reduce((sum, h) => sum + calcTotalScore(h), 0) + calcTotalScore(state.current[i]));
-  if (Math.max(...totals) >= 200) { if(confirm("Start new session with these players?")) restartGame(false); return; }
+  if (Math.max(...totals) >= 200) { if(confirm("Restart game with these players?")) restartGame(false); return; }
   state.players.forEach((_, i) => state.history[i].push({ ...state.current[i], cards: [...state.current[i].cards], mods: [...state.current[i].mods] }));
   state.round++; resetCurrent(); saveToCache(); render();
 }
 
 function goHome() { document.getElementById('game-screen').style.display='none'; document.getElementById('setup-screen').style.display='flex'; }
-function restartGame(ask) { if(!ask || confirm("Clear scores?")) { state.history = state.players.map(() => []); state.round = 1; resetCurrent(); saveToCache(); render(); } }
+function restartGame(ask) { if(!ask || confirm("Wipe scores?")) { state.history = state.players.map(() => []); state.round = 1; resetCurrent(); saveToCache(); render(); } }
 
 window.onload = loadFromCache;
 </script>
