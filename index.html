@@ -56,7 +56,7 @@
       position: relative;
     }
 
-    /* --- CONSTRAINED FIREWORKS (iOS FIX) --- */
+    /* --- CONSTRAINED FIREWORKS (iOS PULSE FIX) --- */
     .fireworks-layer {
       position: absolute;
       top: 0;
@@ -146,11 +146,11 @@
     .active-score { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--accent-blue); }
 
     .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
-    .btn-num { aspect-ratio: 1; border: 2.5px solid currentColor; background: #fff; border-radius: 8px; font-family: 'Bebas Neue'; font-size: 1.1rem; cursor: pointer; }
-    .btn-num.disabled { opacity: 0.1; cursor: not-allowed; }
-    .btn-num.selected { background: var(--accent-green) !important; color: #fff !important; border-color: var(--accent-green) !important; }
+    .btn-num { aspect-ratio: 1; border: 2.5px solid currentColor; background: #fff; border-radius: 8px; font-family: 'Bebas Neue'; font-size: 1.1rem; cursor: pointer; transition: opacity 0.2s; }
+    .btn-num.disabled { opacity: 0.15; cursor: not-allowed; }
+    .btn-num.selected { background: var(--accent-green) !important; color: #fff !important; border-color: var(--accent-green) !important; opacity: 1 !important; }
     
-    /* --- COLOR PALETTE RESTORED --- */
+    /* --- COLOR PALETTE --- */
     .btn-num[data-n="0"] { color: #94a3b8; } .btn-num[data-n="1"] { color: #64748b; } 
     .btn-num[data-n="2"] { color: #849101; } .btn-num[data-n="3"] { color: #be123c; } 
     .btn-num[data-n="4"] { color: #0891b2; } .btn-num[data-n="5"] { color: #15803d; } 
@@ -314,6 +314,10 @@ function calcTotalScore(data) {
 
 function toggleNum(n) {
   const data = (state.editingRound === null) ? state.current[state.active] : state.history[state.active][state.editingRound];
+  
+  // Lock grid if already at Flip 7, unless clicking a card to REMOVE it
+  if (countUniqueCards(data) >= 7 && !data.cards.includes(n)) return;
+
   if (n === 13) {
     if (state.mode === 'flip7') return; 
     const c = data.cards.filter(x => x === 13).length;
@@ -321,7 +325,14 @@ function toggleNum(n) {
   } else {
     data.cards.includes(n) ? data.cards = data.cards.filter(x => x !== n) : data.cards.push(n);
   }
-  if (countUniqueCards(data) >= 7) data.state = 'stay';
+
+  // Update status automatically
+  if (countUniqueCards(data) >= 7) {
+      data.state = 'stay';
+  } else if (data.state === 'stay' && countUniqueCards(data) < 7) {
+      data.state = 'playing'; // Unlock if card removed
+  }
+  
   saveToCache(); render();
 }
 
@@ -342,6 +353,8 @@ function selectPlayer(p) { state.active = p; state.editingRound = null; render()
 
 function render() {
   const activeData = (state.editingRound === null) ? state.current[state.active] : state.history[state.active][state.editingRound];
+  const uC = countUniqueCards(activeData);
+
   document.getElementById('display-name').innerText = state.players[state.active];
   document.getElementById('edit-context').innerText = state.editingRound === null ? 'Live Round' : `Editing Round ${state.editingRound + 1}`;
   document.getElementById('display-score').innerText = activeData.state === 'playing' ? calcTotalScore(activeData) : (activeData.state === 'bust' ? 'BUST 💥' : 'STAY ✓');
@@ -378,15 +391,17 @@ function render() {
   });
   document.getElementById('tb-body').innerHTML = bodyHtml;
 
-  let gridHtml = ''; const uC = countUniqueCards(activeData);
+  let gridHtml = ''; 
   for(let i=0; i<=12; i++) {
     const sel = activeData.cards.includes(i);
-    gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" data-n="${i}" onclick="toggleNum(${i})">${i}</button>`;
+    const locked = (uC >= 7 && !sel);
+    gridHtml += `<button class="btn-num ${sel?'selected':''} ${locked?'disabled':''}" data-n="${i}" onclick="toggleNum(${i})">${i}</button>`;
   }
   if (state.mode !== 'flip7') {
     const c13 = activeData.cards.filter(x => x===13).length;
-    gridHtml += `<button class="btn-num ${c13>=1?'selected':''} ${c13===0 && uC>=7?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
-    gridHtml += `<button class="btn-num ${c13>=2?'selected':''} ${c13<2 && uC>=7?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
+    const locked = (uC >= 7);
+    gridHtml += `<button class="btn-num ${c13>=1?'selected':''} ${(!c13 && locked)?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
+    gridHtml += `<button class="btn-num ${c13>=2?'selected':''} ${(c13<2 && locked)?'disabled':''}" data-n="13" onclick="toggleNum(13)">13</button>`;
   }
   document.getElementById('num-grid').innerHTML = gridHtml;
 
