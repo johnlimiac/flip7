@@ -56,7 +56,7 @@
       position: relative;
     }
 
-    /* --- CONSTRAINED FIREWORKS (iOS PULSE FIX) --- */
+    /* --- CONSTRAINED FIREWORKS (iOS FIX) --- */
     .fireworks-layer {
       position: absolute;
       top: 0;
@@ -105,7 +105,7 @@
     .firework:nth-child(1) { left: 10%; --y: 18vh; --s: 5; --d: 1.6s; }
     .firework:nth-child(2) { left: 85%; --y: 28vh; --s: 3.5; --d: 2.2s; animation-delay: -0.4s; }
     .firework:nth-child(3) { left: 45%; --y: 12vh; --s: 7; --d: 1.9s; animation-delay: -1.2s; }
-    .firework:nth-child(4) { left: 25%; --y: 35vh; --s: 4.5; --d: 2.6s; animation-delay: -0.8s; }
+    .firework:nth-child(4) { left: 25%; --y: 35vh; --s: 4.5; --d: 2.5s; animation-delay: -0.8s; }
     .firework:nth-child(5) { left: 92%; --y: 42vh; --s: 6; --d: 2.0s; animation-delay: -1.5s; }
 
     .firework::before { transform: rotate(120deg); }
@@ -139,6 +139,8 @@
     .cell-editing { outline: 3px solid var(--accent-blue); outline-offset: -3px; background: #eff6ff !important; }
     
     .winner-row td:first-child { border: 3px solid #22c55e !important; border-radius: 8px; background: #f0fdf4 !important; }
+    .f7-count { color: var(--accent-green); font-size: 0.65rem; display: block; }
+    .f7-tag { color: var(--accent-green); font-size: 0.65rem; font-weight: normal; }
 
     .controls { padding: 10px 15px; background: var(--card-body); border-top: 2px solid var(--border); border-radius: 20px 20px 0 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
     .current-info { display:flex; justify-content:space-between; align-items: baseline; margin-bottom: 4px; }
@@ -312,6 +314,13 @@ function calcTotalScore(data) {
   return (!state.allowNegatives) ? Math.max(0, s) : s;
 }
 
+function getDisplayCell(data) {
+  if (data.state === 'bust') return '0💥';
+  const b = getBaseScore(data), isF7 = countUniqueCards(data) >= 7;
+  const stay = data.state === 'stay' ? ' ✓' : '';
+  return isF7 ? `${b} <span class="f7-tag">(+15)✨</span>` : `${b}${stay}`;
+}
+
 function toggleNum(n) {
   const data = (state.editingRound === null) ? state.current[state.active] : state.history[state.active][state.editingRound];
   
@@ -330,7 +339,7 @@ function toggleNum(n) {
   if (countUniqueCards(data) >= 7) {
       data.state = 'stay';
   } else if (data.state === 'stay' && countUniqueCards(data) < 7) {
-      data.state = 'playing'; // Unlock if card removed
+      data.state = 'playing';
   }
   
   saveToCache(); render();
@@ -378,13 +387,15 @@ function render() {
   state.players.forEach((name, pIdx) => {
     let roundCells = '';
     state.history[pIdx].forEach((h, r) => {
-      roundCells += `<td class="${(state.active===pIdx && state.editingRound===r)?'cell-editing':''}" onclick="editHistorical(${pIdx}, ${r})">${h.state==='bust'?'0💥':calcTotalScore(h)}</td>`;
+      roundCells += `<td class="${(state.active===pIdx && state.editingRound===r)?'cell-editing':''}" onclick="editHistorical(${pIdx}, ${r})">${getDisplayCell(h)}</td>`;
     });
-    roundCells += `<td class="${(state.active===pIdx && state.editingRound===null)?'cell-editing':''}" onclick="selectPlayer(${pIdx})">${state.current[pIdx].state==='bust'?'0💥':calcTotalScore(state.current[pIdx])}</td>`;
+    roundCells += `<td class="${(state.active===pIdx && state.editingRound===null)?'cell-editing':''}" onclick="selectPlayer(${pIdx})">${getDisplayCell(state.current[pIdx])}</td>`;
     for(let j=state.history[pIdx].length+1; j<state.round; j++) roundCells += `<td>-</td>`;
     
+    const f7 = state.history[pIdx].filter(h => countUniqueCards(h) >= 7).length + (countUniqueCards(state.current[pIdx]) >= 7 ? 1 : 0);
+
     bodyHtml += `<tr class="${pIdx===state.active?'row-active':''} ${pIdx===winningIdx?'winner-row':''}">
-      <td style="text-align:left; padding-left:10px;">${pIdx===winningIdx?'🎆 ':''}${name}</td>
+      <td style="text-align:left; padding-left:10px;">${pIdx===winningIdx?'🎆 ':''}${name}${f7>0?`<span class="f7-count">F7: ${f7}</span>`:''}</td>
       ${roundCells}
       <td style="color:var(--gold); font-weight:bold;">${totals[pIdx]}</td>
     </tr>`;
@@ -406,7 +417,7 @@ function render() {
   document.getElementById('num-grid').innerHTML = gridHtml;
 
   const pos = ['×2','+2','+4','+6','+8','+10'], neg = ['÷2','-2','-4','-6','-8','-10'];
-  const rowHtml = (list) => `<div class="mods-row">${list.map(m=>`<button class="btn-mod ${activeData.mods.includes(m)?'active':''}" onclick="toggleMod('${m}')">${m}</button>`).join('')}</div>`;
+  const rowHtml = (list) => `<div class="mods-row">${list.map(m=>`<button class="btn-mod ${(state.editingRound === null ? state.current[state.active] : state.history[state.active][state.editingRound]).mods.includes(m)?'active':''}" onclick="toggleMod('${m}')">${m}</button>`).join('')}</div>`;
   document.getElementById('mod-container').innerHTML = (state.mode==='flip7'?rowHtml(pos):(state.mode==='vengeance'?rowHtml(neg):rowHtml(pos)+rowHtml(neg)));
 }
 
