@@ -410,7 +410,6 @@ function render() {
     const sel = activeData.cards.includes(i);
     gridHtml += `<button class="btn-num ${sel?'selected':''} ${(!sel && uC>=7)?'disabled':''}" data-n="${i}" onclick="toggleNum(${i})">${i}</button>`;
   }
-/* Around line 347 */
   const c13 = activeData.cards.filter(x => x===13).length;
   
   // Only show 13 buttons if we are NOT in regular Flip 7 mode
